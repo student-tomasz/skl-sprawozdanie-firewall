@@ -1,0 +1,129 @@
+\subsubsection{Opis zadania}
+Zadanie do zrealizowania w pierwszej części ćwiczenia polegało na takiej konfiguracji zapory, aby nie dopuszczała ona przychodzących połączeń \ssh{} z maszyny \volt{} na drugi interfejs konfigurowanej maszyny.
+Zadanie zrealizowaliśmy w programie \ipfw{} oraz \pf.
+
+%TODO machnij schemat pls, bo masz ładniejszy program i mniej roboty niż dia > pdf
+
+Interfejs, którego zablokowanie było przedmiotem zadania -- \emo{} -- miał przydzielony adres \emoip{}.
+
+% k1% ifconfig
+% vr0: flags=8843<UP,BROADCAST,RUNNING,SIMPLEX,MULTICAST> metric 0 mtu 1500
+%         options=82808<VLAN_MTU,WOL_UCAST,WOL_MAGIC,LINKSTATE>
+%         ether 00:40:63:de:28:a9
+%         inet 194.29.146.247 netmask 255.255.255.0 broadcast 194.29.146.255
+%         media: Ethernet autoselect (100baseTX <full-duplex>)
+%         status: active
+% ipfw0: flags=8801<UP,SIMPLEX,MULTICAST> metric 0 mtu 65536
+% lo0: flags=8049<UP,LOOPBACK,RUNNING,MULTICAST> metric 0 mtu 16384
+%         options=3<RXCSUM,TXCSUM>
+%         inet 127.0.0.1 netmask 255.0.0.0
+% em0: flags=8843<UP,BROADCAST,RUNNING,SIMPLEX,MULTICAST> metric 0 mtu 1500
+%         options=209b<RXCSUM,TXCSUM,VLAN_MTU,VLAN_HWTAGGING,VLAN_HWCSUM,WOL_MAGIC
+% >
+%         ether 00:1b:21:07:c9:8e
+%         inet 10.146.226.128 netmask 255.255.0.0 broadcast 10.146.255.255
+%         media: Ethernet autoselect (1000baseT <full-duplex>)
+%         status: active
+
+\subsubsection{Wykonanie - \pf{}}
+\label{ss2:pf}
+Sprawdzono, że połączenie ssh z maszyny \volt{} na adres \emoip{} jest możliwe.
+Następnie skonfigurowano zaporę \pf{} w następujący sposób:
+
+\begin{lstlisting}[caption={\texttt{/etc/pf.conf}},label=pfconf]
+drugi_interfejs = "em0"
+volt = "10.146.7.3"
+
+block in quick on $drugi_interfejs proto {tcp udp} from $volt to any port ssh
+\end{lstlisting}
+
+Widać, że składnia pliku konfiguracyjnego \pf{} pozwala przypisywać symboliczne nazwy zmiennym, co zwiększa jego czytelność.
+
+Całe zadanie realizuje reguła z ostatniej linii listingu \ref{pfconf}.
+
+Ogólna składnia reguły w konfiguracji \pf{} jest następująca:
+
+\begin{lstlisting}
+Akcja [kierunek] [log] [quick] [on interface] [af] [proto protocol] \
+   [from src_addr [port src_port]] [to dst_addr [port dst_port]] \
+   [flags tcp_flags] [state]
+\end{lstlisting}
+
+\emph{Akcja} którą wybraliśmy to \textbf{block}.
+Pakiet do którego zostanie zastosowana akcja \textbf{block} zostanie odrzucony.
+Zależnie od konfiguracji zapora może także przesłać nadawcy informację o tym, że jego pakiet nie osiągnął celu.
+Zależnie od protokołu, odpowiedzią będzie pakiet \texttt{TCP RST}(w przypadku połączenia \tcp{}) lub \texttt{ICMP Unreachable}(w przypadku pozostałych typów połączeń).
+
+\emph{kierunek} \textbf{in} oznacza, że reguła dotyczy połączeń przychodzących.
+
+Zastosowanie dyrektywy \emph{quick} oznacza, że jeżeli pakiet pasuje do danej reguły, to akcja (odrzucenie bądź przekazanie dalej) powinna być wykonana natychmiast.
+W \pf{} inaczej niż w \ipfw{} pakiet może zostać dopasowany do wielu reguł.
+Reguły dopasowywane są wg. ich umiejscowienia w pliku konfiguracyjnym - od góry do dołu.
+
+Dyrektywa \emph{proto} przyjmuje dowolny protokół zadeklarowany w pliku \texttt{/etc/protocols}.
+
+\pf{} stosuje akcję z pierwszej napotkanej reguły z dyrektywą \emph{quick}.
+Jeżeli żadna regułą nie ma takiej dyrektywy, to zostanie zastosowana akcja z ostatniej dopasowanej reguły.
+
+Następnie wybieramy interfejs, którego dotyczy reguła, protokół, adres nadawcy i odbiorcy.
+Warto zwrócić uwagę na konstrukcję \texttt{\{udp tcp\}} - jest to lista.
+Reguła zawierająca listę zostaje podczas wczytywania pliku konfiguracyjnego przepisana, jako wiele reguł.
+W pamięci tworzona jest reguła dla każdej kombinacji elementów wszystkich list.
+
+Zastosowano także słowo kluczowe \emph{any}, które oznacza dowolny adres docelowy.
+
+Ostatecznie regułą określa, że blokowane mają być połączenia na port \ssh{}.
+Określenie numeru portu odpowiadającego \ssh{} odbywa się za pomocą pliku \texttt{/etc/services}.
+
+Po uruchomieniu zapory nie udało się nawiązać połączenia \ssh{} z maszyny \volt{} na \emoip{}.
+
+\subsubsection{wykonanie - \ipfw{}}
+\label{ss2:ipfw}
+\ipfw{}, w przeciwieństwie do \pf{} nie posiada własnej składni plików konfiguracyjnych.
+Zamiast tego reguły filtrowania konfiguruje się korzystając z polecenia \texttt{ipfw}.
+
+Polecenie to pozwala na modyfikowanie zestawu reguł na poziomie reguły.
+Pozwala to łatwo tworzyć dynamiczne zestawy reguł.
+Wystarczy połączyć polecenie \ipfw{} i \cron{} aby uzyskać regułę zależną od godziny.
+
+Rozwiązanie takie nie oznacza, że język konfiguracyjny jest ubogi w stosunku do \pf{}.
+Co prawda samo polecenie \ipfw{} nie obsługuje zmiennych, ale za to możliwe jest korzystanie ze zmiennych powłoki.
+Możliwe jest także używanie konstrukcji warunkowych czy pętli, co pozwala na tworzenie zaawansowanych i dynamicznych zestawów reguł bez potrzeby przeładowywania całej konfiguracji zapory.
+
+\begin{lstlisting}
+ # ipfw add 100 deny tcp from 10.146.7.3 to any dst-port 22 via em0
+ # ipfw add 200 deny udp from 10.146.7.3 to any dst-port 22 via em0
+\end{lstlisting}
+
+Składnia polecenia jest dość podobna, do tego co zostało opisane w sekcji \ref{ss2:pf}.
+
+Po dyrektywie \emph{add} podano numer reguły, która ma zostać utworzona.
+Podobnie jak w \pf{} reguły dopasowane są od najniższych do najwyższych numerów.
+
+W przeciwieństwie do \pf{} akcja jest wykonywana od razu po dopasowaniu reguły.
+
+\subsubsection{Filtrowanie przed ustanowieniem połączenia}
+Teoretycznie w protokole \tcp{} aby zablokować cały ruch wystarczy zablokować możliwość ustanowienia połączenia.
+
+Można więc dodać do zapory następującą regułę:
+\begin{lstlisting}
+ # ipfw add 100 deny tcp from 10.146.7.3 to any dst-port 22 via em0 tcpflags syn
+\end{lstlisting}
+
+Reguła ta sprawi, że zostaną odrzucone wszystkie przychodzące pakiety z flagą \texttt{SYN}.
+
+Jeżeli celem jest samo zablokowanie ruchu, to naszym zdaniem lepiej stosować rozwiązanie z sekcji \ref{ss2:ipfw}.
+Reguła zastosowana w tamtej sekcji powinna działać wydajniej, ponieważ nie musi badać flag \tcp{} każdego pakietu.
+
+Ponadto reguła z sekcji \ref{ss2:ipfw} zablokuje też już nawiązane połączenia i komunikację nie będącą częścią połączeń (błędnie wysłane pakiety, próby ataku na stos \texttt{TCP/IP} systemu za firewallem).
+
+Stosowanie filtrowania opartego na flagach \tcp{} ma sens, jeżeli celem jest zezwolenie na połączenie pomiędzy dwoma maszynami tylko jeśli jedna z nich jest maszyną inicjującą połączenie.
+
+Rozważmy regułę bez podanego portu:
+
+\begin{lstlisting}
+ # ipfw add 300 deny tcp from 10.146.7.3 to any via em0 tcpflags syn
+\end{lstlisting}
+
+Regułą taka pozwoli na komunikację z maszyną \volt{} za pomocą \tcp{} wtedy i tylko wtedy, kiedy maszyna volt nie jest maszyną inicjującą połączenie.
+Takie rozwiązanie jest podobne do reguł stanowych, natomiast nie zużywa pamięci na przechowywanie informacji o tym, które połączenia zostały otwartę i przez którą stronę.

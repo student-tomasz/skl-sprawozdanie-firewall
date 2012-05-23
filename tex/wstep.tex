@@ -1,0 +1,32 @@
+\subsubsection{Teoria}
+
+Zapory sieciowe to narzędzia (budowane jako software lub hardware) służące ochronie pewnego wydzielonego obszaru sieci.
+Umieszcza się je pomiędzy siecią, która ma podlegać ochronie, a siecią z której spodziewamy się ataków (najczęściej Internet).
+
+Zapory dzielimy na filtrujące pakiety (\ang{packet-filtering firewall}) i pośredniczące(\ang{proxy-firewall})\cite{wstep:stevens}.
+Ćwiczenie obejmuje tylko zapory pierwszego typu.
+
+Zapory filtrujące działają na zasadzie trasownika wyposażonego w reguły filtrujące.
+Na podstawie tych reguł trasownik podejmuje decyzje, czy dany pakiet powinien być przekazany dalej, czy odrzucony.
+Za pomocą tych reguł administrator sieci stara się tak skonfigurować zaporę, aby uniemożliwić niepożądany ruch sieciowy.
+
+Blokowanie ruchu może odbywać się na podstawie różnych rodzajów reguł.
+
+Najprostszym typem reguł są reguły bezstanowe.
+W regułach tego typu pakiety są odrzucane bądź nie tylko i wyłącznie na podstawie swojej zawartości.
+Stosując reguły tego tego typu można zablokować na przykład połączenia na konkretny port, lub połączenia z konkretnymi adresami.
+Przykład zastosowania reguł tego typu znajduje się w sekcji \ref{sec:bezstanowe}.
+
+Nieco bardziej złożone są reguły stanowe(\ang{stateful packet inspection}).
+Zapory zbudowane w oparciu o reguły tego typu potrafią rozpoznać pakiety jako należące do konkretnego połączenia (rozumianego w sensie ogólnym jako wymiana informacji pomiędzy dwoma komputerami, a niekoniecznie w sensie \tcp{}).
+Dokładniejszy opis działania reguł tego typu oraz przykład można znaleźć w sekcji \ref{sec:stanowe}.
+
+Ponadto możliwe jest także filtrowanie w oparciu o warstwę aplikacji.
+Reguły tego typu mogą rozpoznać konkretne protokoły warstwy aplikacji(np. BitTorrent, SSH) na podstawie głębokiej inspekcji pakietów, niezależnie od tego czy korzystają z domyślnego portu\cite{wiki:firewall}.
+Reguły tego typu nie były przedmiotem ćwiczenia.
+
+\subsubsection{Rozwiązania dostępne w systemie FreeBSD}
+System FreeBSD udostępnia trzy rozwiązania realizujące funkcjonalność zapory sieciowej: \pf{}(PacketFilter), \ipf{}(IPFILTER) i \ipfw{}(IPFIREWALL).
+
+Wszystkie te rozwiązania to dojrzałe systemy pozwalające na dowolną konfigurację stanowej lub bezstanowej zapory.
+Najważniejsze różnice pomiędzy nimi to język stosowany do konfiguracji oraz narzędzia do kształtowania ruchu z którymi współpracują\cite{bsd:firewalls}.
