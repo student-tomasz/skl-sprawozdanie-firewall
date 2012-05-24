@@ -1,0 +1,145 @@
+\subsubsection{Opis zadania}
+Druga część ćwiczenia polegała na zapoznaniu się z zaporą stanową.
+Tę część ćwiczenia przeprowadzono wyłącznie w oparciu o program \ipfw{}.
+
+Jako zadanie w tej części wybrano takie skonfigurowanie zapory, aby możliwe było nawiązanie połączenia ze zdalną maszyną na porcie 80.
+Połączenie miało być możliwe do utworzenia tylko jeśli inicjowała je nasza maszyna.
+Niemożliwe miało być natomiast nawiązanie identycznego połączenia (tj. takiego, w którym zdalna maszyna używała portu 80) przez zdalną maszynę.
+
+Zaporę skonfigurowano na maszynie \kdwa{}.
+Jako maszyny testowej, która miała się z nią łączyć użyto maszyny \kpiec{}.
+
+% TODO - schemat z naszą maszyną i dowolną obcą
+
+% Do tego możesz machnąć diagram podobny do diargramu sekwencji
+% (trochę jak PADI-PADO w sprawozdaniu z PPP) pokazujący jak three-way
+% handshake działa, kiedy k2 jest inicjatorem, a nie działa kiedy inna
+% maszyna jest.
+
+% Coś takiego:
+
+% K2             ???
+% |   -- SYN ->   |
+% |   <- S+A --   |
+% |   -- ACK ->   |
+
+% K2             ???
+% |   <- SYN --   |
+% |   -- RST ->   |
+
+\subsubsection{Wykonanie - \pf{}}
+Wyczyszczono wszystkie reguły zapory ipfw:
+\begin{lstlisting}
+ipfw -q -f flush
+\end{lstlisting}
+
+Za pomocą programu \nc{} na komputerze \kpiec{} zaczęto nasłuchiwać na połączenie na porcie 80.
+Sprawdzono wykonanie połączenia z komputera \kdwa{}.
+
+Kiedy potwierdzono, że nie ma problemu z nawiązaniem takiego połączenia zbadaliśmy połączenie odwrotne.
+\kdwa{} nasłuchiwało na porcie 6666, a nadawło z portu 80.
+Udało się nawiązać połączenie.
+
+% TODO Nierówne są, coś ma dodatkowy margines. Jeśli suma szerokości
+% minipage'y to 1\linewidth, to zajmują więcej niż linewidth.
+\begin{minipage}[b]{0.4\linewidth}
+\begin{lstlisting}[caption={\kdwa{}}]
+$ netcat k5 80
+test
+^D
+
+$ netcat -l 6666
+test test
+$
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}[b]{0.12\linewidth}
+  \hfill\vspace{1cm}
+\end{minipage}
+\begin{minipage}[b]{0.4\linewidth}
+\begin{lstlisting}[caption={\kpiec{}}]
+$ netcat -l 80
+test
+
+
+$ netcat -p 80 k2 6666
+test test
+^D
+\end{lstlisting}
+\end{minipage}
+
+Rozpoczęto konfigurację zapory.
+
+Dobrą praktyką jest rozpoczynanie konfiguracji zapory od zablokowania całego ruchu.
+Niestety do prawidłowego działania maszyny niezbędne jest wiele połączeń: \ssh{}, \texttt{LDAP}, \texttt{NAS}.
+Zdecydowaliśmy się więc na tzw. \emph{blacklisting}.
+
+Praktyka ta polega na tym, że domyślnie wszystkie połączenia są przyjmowane.
+Część połączeń, zdefiniowanych na ``czarnej liście'' jest odrzucana.
+Nie jest to zalecana praktyka, ze względu na to że łatwo można przeoczyć jakieś połączenie, które powinno być zablokowane i narazić sieć na atak lub nadużycia\cite{bsd:firewall}.
+
+W przypadku zapory stanowej można bardzo łatwo wprowadzić politykę odwrotną, tzw. politykę białej listy.
+Domyślnie wszystkie pakiety przychodzące byłyby odrzucane, natomiast pakiety wychodzące tworzyłyby nowe dynamiczne reguły.
+Reguły te pozwalałyby odbiorcom pakietów odpowiedzieć.
+
+Taka prosta konfiguracja zakłada, że użytkownicy w sieci chronionej firewallem mogą być obdarzeni pełnym zaufaniem i nieograniczonym dostępem do Internetu.
+
+\subsubsection{Konfiguracja zapory}
+Na maszynie \kdwa{} zostały skonfigurowane następujące reguły zapory:
+
+\begin{lstlisting}
+00100 check-state
+00150 allow tcp from any to any dst-port 80 out keep-state
+00250 deny log logamount 100 ip from any to any src-port 80 in
+65535 allow ip from any to any
+\end{lstlisting}
+
+Reguły \texttt{150} i \texttt{250} są podobne do tych omawianych w sekcji \ref{sec:bezstanowe}.
+Zezwolono na połączenia \tcp{} wychodzące, których celem jest dowolny adres i port 80.
+Zabroniono natomiast wszystkich połączeń przychodzących, których źródłem jest port 80.
+
+Dodatkowo dyrektywa \textbf{keep-state} w regule \texttt{150} instruuje zaporę, aby dodała nowe reguły dynamiczne odpowiadające adresom i portom wykorzystanym do połączenia \cite{bsd:firewall}.
+Dynamiczna reguła zostanie utworzona tylko kiedy regułą zostanie dopasowana do połączenia.
+
+Gdyby były to jedyne reguły, nawiązanie połączenia \tcp{} przez maszynę \kdwa{} byłoby niemożliwe.
+
+Dzieje się tak ponieważ samo utworzenie dynamicznych reguł nie wystarczy.
+Należy jeszcze dodać dyrektywę, która instruuje zaporę by sprawdziła czy aktualny pakiet pasuje do którejś z dynamicznych reguł.
+
+Zależało nam, aby dynamiczne reguły były sprawdzone zanim odrzucimy pakiet (regułą \texttt{250}).
+Dodano więc dyrektywę \textbf{check-state} jako regułę \texttt{100} - pierwszą w zestawie reguł naszej zapory.
+
+W takiej konfiguracji zapora najpierw sprawdzi, czy przychodzący pakiet pasuje do reguł dynamicznych.
+Jeżeli tak, zostanie on zaakceptowany.
+Jeżeli nie, zapora będzie kontynuwać działanie próbując dopasować pakiet do reguł statycznych.jo
+
+\subsubsection{Testy}
+Przeprowadzono testy analogiczne do tych na początku ćwiczenia.
+
+%TODO Tu też
+\begin{minipage}[b]{0.4\linewidth}
+\begin{lstlisting}[caption={\kdwa{}}]
+$ netcat k5 80
+test
+^D
+
+$ netcat -l 6666
+$
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}[b]{0.12\linewidth}
+  \hfill\vspace{1cm}
+\end{minipage}
+\begin{minipage}[b]{0.4\linewidth}
+\begin{lstlisting}[caption={\kpiec{}}]
+$ netcat -l 80
+test
+$ netcat -p 80 k2 6666
+test test
+TEST
+^D
+\end{lstlisting}
+\end{minipage}
+
+Udało się osiągnąć zamierzony efekt.
+W drugim przypadku testowym nie udało się nawiązać połączenia i przesłać danych do maszyny \kdwa{}.
