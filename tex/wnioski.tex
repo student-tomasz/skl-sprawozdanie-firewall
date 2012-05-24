@@ -1,0 +1,12 @@
+% TODO GOOBY PLS
+System FreeBSD  wyposażony jest w dojrzałe i dobrze udokumentowane narzędzia do konfiguracji zapór sieciowych.
+
+Konfiguracja nawet prostej zapory na zasadzie białej listy w złożonym systemie może wymagać dużo pracy - należy zebrać wszystkie usługi z których korzysta system.
+Takie rozwiązanie jest jednak dużo bezpieczniejsze od rozwiązania opartego o czarną listę.
+
+Konfiguracja zapory opartej o białą listę jest tym trudniejsza, jeśli nie ma fizycznego dostępu do komputera który konfigurujemy.
+Łatwo można doprowadzić komputer do stanu, w którym z różnych powodów nie można się na niego zalogować.
+Zapora musi być budowana tak, aby po dodaniu każdej kolejnej reguły ciągle pozwalała na wszystkie połączenia wymagane do pracy zdalnej.
+Może to wymagać dodawania reguł w innej kolejności, niż będą stosowane przez zaporę, dlatego \ipfw{} pozwala na podanie numeru dodawanej reguły.
+
+Zapory z regułami stanowymi znacząco ułatwiają proste konfiguracje, w których można zaufać użytkownikom wewnątrz chronionego fragmentu sieci.
