@@ -10,7 +10,7 @@ interfejs maszyny \kdwa. Zadanie zrealizowano korzystając z \ipfw{} oraz \pf.
 
 Na maszynie \kdwa{} uruchomiono i skonfigurowano dodatkowy interfejs \emo{} z
 adresem IP \emoip. Wykorzystane połączenia między maszynami \volt{} i \kdwa{} są
-przedstawione na schemacie \ref{fig:bezstanowa:polaczenia}.
+przedstawione na schemacie \ref{fig:bezstanowe:polaczenia}.
 
 %TODO machnij schemat pls, bo masz ładniejszy program i mniej roboty niż dia > pdf
 
@@ -32,6 +32,13 @@ przedstawione na schemacie \ref{fig:bezstanowa:polaczenia}.
 %         media: Ethernet autoselect (1000baseT <full-duplex>)
 %         status: active
 
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=12cm]{figury/bezstanowe/polaczenia.pdf}
+  \caption{Schemat połączeń wykorzystanych przy realizacji pierwszej części ćwiczenia.}
+  \label{fig:bezstanowe:polaczenia}
+\end{figure}
+
 
 \subsubsection{Wykonanie --- \pf}
 \label{bezstanowa:pf}
@@ -51,7 +58,7 @@ Po zapoznaniu się ze składnią reguł sprawdzono, że połączenie \ssh{} z ma
 \volt{} na adres \emoip{} jest możliwe. Następnie skonfigurowano zaporę \pf{} w
 tworząc regułę:
 
-\begin{lstlisting}[label=bezstanowa:pf.conf]
+\begin{lstlisting}[label=bezstanowe:pf.conf]
 #/etc/pf.conf
 drugi_interfejs = "em0"
 volt = "10.146.7.3"
@@ -59,7 +66,7 @@ block in quick on $drugi_interfejs proto {tcp udp} from $volt to any port ssh
 \end{lstlisting}
 
 \noindent Całe zadanie realizuje reguła z ostatniej linii listingu
-\ref{bezstanowa:pf.conf}:
+\ref{bezstanowe:pf.conf}:
 
 \begin{description}
 
