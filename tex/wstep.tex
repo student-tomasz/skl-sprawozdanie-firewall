@@ -23,12 +23,12 @@ zawartości. Stosując reguły tego tego typu można zablokować na przykład
 połączenia na konkretny port, lub połączenia z konkretnymi adresami. Przykład
 zastosowania reguł tego typu znajduje się w sekcji \ref{sec:bezstanowe}.
 
-Nieco bardziej złożone są reguły stanowe (\ang{stateful packet inspection}).
-Zapory zbudowane w oparciu o reguły tego typu potrafią rozpoznać pakiety jako
-należące do konkretnego połączenia. Połączenie rozumiane jest w sensie ogólnym
-jako wymiana informacji pomiędzy dwoma komputerami, a niekoniecznie w sensie
-połączenia \tcp. Dokładniejszy opis działania reguł tego typu oraz przykład
-można znaleźć w sekcji \ref{sec:stanowe}.
+Nieco bardziej złożone są \textbf{reguły stanowe} (\ang{stateful packet
+inspection}). Zapory zbudowane w oparciu o reguły tego typu potrafią rozpoznać
+pakiety jako należące do konkretnego połączenia. Połączenie rozumiane jest w
+sensie ogólnym jako wymiana informacji pomiędzy dwoma komputerami, a
+niekoniecznie w sensie połączenia \tcp. Dokładniejszy opis działania reguł tego
+typu oraz przykład można znaleźć w sekcji \ref{sec:stanowe}.
 
 Ponadto możliwe jest filtrowanie w oparciu o warstwę aplikacji. Reguły tego typu
 mogą rozpoznać konkretne protokoły warstwy aplikacji -- BitTorrent czy SSH. Jest
@@ -45,4 +45,4 @@ sieciowej: \pf{} -- PacketFilter, \ipf{} -- IPFILTER oraz \ipfw{} -- IPFIREWALL.
 Wszystkie te rozwiązania to dojrzałe systemy pozwalające na dowolną konfigurację
 stanowej lub bezstanowej zapory. Najważniejsze różnice pomiędzy nimi to język
 stosowany do konfiguracji oraz narzędzia do kształtowania ruchu z którymi
-współpracują \cite{bsd:firewalls}.
+współpracują \cite{bsd:firewall}.
