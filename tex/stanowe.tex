@@ -9,9 +9,10 @@ Druga część ćwiczenia polegała na wykorzystaniu reguł stanowych. Tę czę�
 
 W ramach zadania skonfigurowano zaporę, tak aby możliwe było nawiązanie
 połączenia ze zdalną maszyną na porcie \pos. Połączenie miało być możliwe do
-utworzenia tylko jeśli inicjowała je nasza maszyna. Niemożliwe miało być
+utworzenia tylko gdy inicjowane było z maszyny \kdwa. Niemożliwe miało być
 natomiast nawiązanie identycznego połączenia o przeciwnym zwrocie to znaczy
-inicjowanego przez zdalną maszynę.
+inicjowanego przez zdalną maszynę. Rysunek \ref{fig:stanowe:handshake}
+przedstawia pożądane zachowanie przy próbie nawiązywania połączenia.
 
 Zaporę skonfigurowano na maszynie \kdwa{}. Jako maszyny zdalnej, która miała
 się z nią łączyć użyto maszyny \kpiec{}.
@@ -33,6 +34,15 @@ się z nią łączyć użyto maszyny \kpiec{}.
 % K2             ???
 % |   <- SYN --   |
 % |   -- RST ->   |
+
+\begin{figure}[h!]
+  \centering
+  \subfloat[][]{\includegraphics[width=5cm]{figury/stanowe/handshake-od-k2.pdf}}
+  \qquad\qquad\qquad
+  \subfloat[][]{\includegraphics[width=5cm]{figury/stanowe/handshake-od-k5.pdf}}
+  \caption{Wymiana komunikatów podczas \emph{handshake} przy nawiązywaniu połączenia przez maszyny po obu stronach zapory.}
+  \label{fig:stanowe:handshake}
+\end{figure}
 
 
 \subsubsection{Wykonanie}
