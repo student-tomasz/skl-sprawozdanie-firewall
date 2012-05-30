@@ -21,29 +21,31 @@ Tomasz Cudziło, Barnaba Turek\\
 
 \section{Cel ćwiczenia}
 
-W ramach laboratorium wykonano konfigurację zapory sieciowej do blokady
-określonych typów transmisji.
+W ramach laboratorium skonfigurowano zaporę sieciową do blokady określonych
+typów transmisji.
 
 W pierwszej części blokowano ruch \ssh{} pochodzący z maszyny \volt{} na
 dodatkowym interfejsie. Blokadę wykonano korzystając z \pf, następnie z \ipfw,
-podając reguły w trybie bezstanowym. W drugiej części wszyscy żyli długo i
-szczęśliwie, bo jeszcze nie znali zadania\dots
+podając reguły w trybie bezstanowym. W drugiej części wykorzytano reguły stanowe
+do wykonania blokady zezwalającej na wykonanie połączenia \ssh{} zza zapory,
+jednocześnie odrzucając połączenia przychodzą z zewnątrz zapory.
+
 
 \section{Wstęp}
 \label{sec:wstep}
 \input{./tex/wstep.tex}
+
+
 \section{Wykonanie ćwiczenia}
-\subsection{Zapora bezstanowa}
-\label{sec:bezstanowe}
 \input{./tex/bezstanowe.tex}
-\subsection{Zapora stanowa}
-\label{sec:stanowe}
 \input{./tex/stanowe.tex}
-\subsection{Wnioski}
+
+
+\section{Wnioski}
 \input{./tex/wnioski.tex}
 
-%\section{Bibliografia}
 
+%\section{Bibliografia}
 \input{./tex/bibliografia.tex}
 
 
