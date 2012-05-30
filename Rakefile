@@ -1,8 +1,5 @@
 $document = 'sprawozdanie-firewall.pdf'
-$dependencies = [
-  'sprawozdanie-ato.sty',
-  'tex/bibliografia.tex',
-]
+$dependencies = [] + Dir.glob('**/*.tex') + Dir.glob('./*sty')
 $byproducts = %w{*.out *.log *.aux *.toc}
 
 $lc = 'xelatex'
